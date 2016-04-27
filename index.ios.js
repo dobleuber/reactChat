@@ -1,7 +1,6 @@
 /**
  * Sample React Native App
  * https://github.com/facebook/react-native
- * @flow
  */
 
 import React, {
@@ -9,27 +8,170 @@ import React, {
   Component,
   StyleSheet,
   Text,
-  View
+  View,
+  ScrollView,
+  Image,
+  TextInput,
 } from 'react-native';
 
-class reactChat extends Component {
-  render() {
+//socket.io assumes navigator.userAgent is a string, supply a dummy one to make it happy
+window.navigator.userAgent = "react-native";
+
+var CONNECTION_METADATA_PARAMS = {
+    version: '__sails_io_sdk_version',
+    platform: '__sails_io_sdk_platform',
+    language: '__sails_io_sdk_language'
+};
+
+var SDK_INFO = {
+    version: '0.11.0',
+    platform: typeof module === 'undefined' ? 'browser' : 'node',
+    language: 'javascript'
+};
+
+SDK_INFO.versionString =
+    CONNECTION_METADATA_PARAMS.version + '=' + SDK_INFO.version + '&' +
+    CONNECTION_METADATA_PARAMS.platform + '=' + SDK_INFO.platform + '&' +
+    CONNECTION_METADATA_PARAMS.language + '=' + SDK_INFO.language;
+
+const io = require("./node_modules/socket.io-client/socket.io");
+const socket = io('http://chat.victorv.co', {
+  query: SDK_INFO.versionString,
+  transports: ['websocket'] // you need to explicitly tell it to use websockets
+});
+
+var reactChat = React.createClass( {
+  getInitialState: function() {
+    console.log('getInitialState');
+    return {
+      username: '',
+      message: '',
+      mesageList: []
+    };
+  },
+  componentDidMount: function() {
+    
+    socket.on('connect', () => {
+      console.log('WebSocket Connected!!');
+      socket.emit('get', {url: '/chat/addConversation'}, function (response) { console.log(response); });
+    });
+
+    socket.on('chat',function(obj){
+        if(obj.verb === 'created') {
+            console.log("Chat Message Received!");
+            console.log(obj);
+            // TODO Load Message
+        }
+    });
+
+  },
+  sendChat: function(message) {
+    console.log(message);
+  },
+  componentWillUnmount: function() {
+    socket.close();
+  },
+  render: function() {
     return (
       <View style={styles.container}>
-        <Text style={styles.welcome}>
-          Welcome to React Native!
-        </Text>
-        <Text style={styles.instructions}>
-          To get started, edit index.ios.js
-        </Text>
-        <Text style={styles.instructions}>
-          Press Cmd+R to reload,{'\n'}
-          Cmd+D or shake for dev menu
-        </Text>
+        <ScrollView style={styles.chatContainer}>
+          <View style={styles.messages}>
+            <Text>message</Text>
+            <Image
+              style={styles.iconMsg}
+              source={{uri: 'http://facebook.github.io/react/img/logo_og.png'}}
+            />
+          </View>
+          <View style={styles.messages}>
+            <Text>message</Text>
+            <Image
+              style={styles.iconMsg}
+              source={{uri: 'http://facebook.github.io/react/img/logo_og.png'}}
+            />
+          </View>  
+          <View style={styles.messages}>
+            <Text>message</Text>
+            <Image
+              style={styles.iconMsg}
+              source={{uri: 'http://facebook.github.io/react/img/logo_og.png'}}
+            />
+          </View>
+          <View style={styles.messages}>
+            <Text>message</Text>
+            <Image
+              style={styles.iconMsg}
+              source={{uri: 'http://facebook.github.io/react/img/logo_og.png'}}
+            />
+          </View>
+          <View style={styles.messages}>
+            <Text>message</Text>
+            <Image
+              style={styles.iconMsg}
+              source={{uri: 'http://facebook.github.io/react/img/logo_og.png'}}
+            />
+          </View>  
+          <View style={styles.messages}>
+            <Text>message</Text>
+            <Image
+              style={styles.iconMsg}
+              source={{uri: 'http://facebook.github.io/react/img/logo_og.png'}}
+            />
+          </View><View style={styles.messages}>
+            <Text>message</Text>
+            <Image
+              style={styles.iconMsg}
+              source={{uri: 'http://facebook.github.io/react/img/logo_og.png'}}
+            />
+          </View>
+          <View style={styles.messages}>
+            <Text>message</Text>
+            <Image
+              style={styles.iconMsg}
+              source={{uri: 'http://facebook.github.io/react/img/logo_og.png'}}
+            />
+          </View>  
+          <View style={styles.messages}>
+            <Text>message</Text>
+            <Image
+              style={styles.iconMsg}
+              source={{uri: 'http://facebook.github.io/react/img/logo_og.png'}}
+            />
+          </View><View style={styles.messages}>
+            <Text>message</Text>
+            <Image
+              style={styles.iconMsg}
+              source={{uri: 'http://facebook.github.io/react/img/logo_og.png'}}
+            />
+          </View>
+          <View style={styles.messages}>
+            <Text>message</Text>
+            <Image
+              style={styles.iconMsg}
+              source={{uri: 'http://facebook.github.io/react/img/logo_og.png'}}
+            />
+          </View>  
+          <View style={styles.messages}>
+            <Text>message</Text>
+            <Image
+              style={styles.iconMsg}
+              source={{uri: 'http://facebook.github.io/react/img/logo_og.png'}}
+            />
+          </View>
+        </ScrollView>
+        <View>
+          <TextInput style={styles.inputMessage} placeholder={'TypeYourNameHere'} />
+        </View>
+        <View>
+          <TextInput style={styles.inputMessage} 
+            ref='MessageInput'
+            placeholder={'TypeYourMessageHere'}
+            returnKeyType={'send'}
+            onSubmitEditing={(event) => this.sendChat(event.nativeEvent.text)} />
+        </View>
       </View>
     );
   }
-}
+});
 
 const styles = StyleSheet.create({
   container: {
@@ -38,15 +180,41 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#F5FCFF',
   },
-  welcome: {
-    fontSize: 20,
-    textAlign: 'center',
-    margin: 10,
+  chatContainer: {
+    flex: 5,
+    alignSelf: 'stretch',
+    borderWidth: 1,
+    borderRadius: 5,
+    borderStyle:'dashed',
+    padding: 5,
   },
-  instructions: {
-    textAlign: 'center',
-    color: '#333333',
-    marginBottom: 5,
+  messageText: {
+    flex:1,
+    flexDirection:'row',
+    margin: 20,
+  },
+  messages: {
+    flex:1,
+    flexDirection:'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    margin: 20,
+  },  
+  icon: {
+    width: 100,
+    height: 100,
+  },
+  iconMsg: {
+    width: 40,
+    height: 40,
+  },
+  inputMessage: {
+    borderWidth: 1,
+    borderRadius: 5,
+    borderStyle:'solid',
+    padding: 5,
+    width: 180,
+    height: 50,
   },
 });
 
