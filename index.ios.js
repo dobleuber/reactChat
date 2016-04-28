@@ -74,13 +74,15 @@ var reactChat = React.createClass( {
   renderMessage: function (mes, i) {
     return (
         <View style={styles.messages} key={i}>
-            <Text>{mes.user}</Text>
-            <Text>{mes.message}</Text>
+            <Text style={styles.userMessage}>{mes.user}</Text>
+            <Text style={styles.message}>{mes.message}</Text>
           </View>
       );
   },
   sendChat: function(message) {
     console.log(message);
+    var data = { user: this.state.username, message: this.state.message };
+    socket.emit('post', {url: '/chat/addConversation', data: data }, function (response) { console.log(response); });
   },
   componentWillUnmount: function() {
     socket.close();
@@ -92,14 +94,18 @@ var reactChat = React.createClass( {
           { this.state.messageList.map(this.renderMessage) }
         </ScrollView>
         <View>
-          <TextInput style={styles.inputMessage} placeholder={'TypeYourNameHere'} />
+          <TextInput style={styles.inputMessage} placeholder={'TypeYourNameHere'} 
+            onChangeText={(text) => this.setState({username: text})}
+            value={this.state.username} />
         </View>
         <View>
           <TextInput style={styles.inputMessage} 
             ref='MessageInput'
             placeholder={'TypeYourMessageHere'}
             returnKeyType={'send'}
-            onSubmitEditing={(event) => this.sendChat(event.nativeEvent.text)} />
+            onChangeText={(text) => this.setState({message:text})}
+            value={this.state.message}
+            onSubmitEditing={(event) => this.sendChat()} />
         </View>
       </View>
     );
@@ -135,6 +141,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     margin: 20,
   },  
+  message: {
+    flex:3,
+  },
+  userMessage: {
+    flex:1,
+  },
   icon: {
     width: 100,
     height: 100,
