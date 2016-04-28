@@ -71,6 +71,53 @@ var reactChat = React.createClass( {
 
   },
 
+  
+  sendChat: function(message) {
+    console.log(message);
+    var data = { user: this.state.username, message: this.state.message };
+    socket.emit('post', {url: '/chat/addConversation', data: data }, function (response) { console.log(response); });
+    this.setState({message:''});
+  },
+  setUsername: function(username) {
+    this.setState({username:username});
+  },
+  componentWillUnmount: function() {
+    socket.close();
+  },
+
+  renderSetUsername: function(){
+    return (<View>
+          <TextInput style={styles.inputMessage} placeholder={'TypeYourNameHere'} 
+            returnKeyType={'send'}
+            onSubmitEditing={(event) => this.setUsername(event.nativeEvent.text)}
+            />
+        </View>);
+  },
+  renderMessageList : function () {
+    return (
+      <View>
+        <MessageList messages={this.state.messageList} />
+        <TextInput style={styles.inputMessage} 
+          ref='MessageInput'
+          placeholder={'TypeYourMessageHere'}
+          returnKeyType={'send'}
+          onChangeText={(text) => this.setState({message:text})}
+          value={this.state.message}
+          onSubmitEditing={(event) => this.sendChat()} />
+            
+      </View>)
+  },
+  
+  render: function() {
+    return (
+      <View style={styles.container}>
+        {this.state.username ? this.renderMessageList(): this.renderSetUsername()}
+      </View>
+    );
+  }
+});
+
+var MessageList = React.createClass( {
   renderMessage: function (mes, i) {
     return (
         <View style={styles.messages} key={i}>
@@ -79,36 +126,13 @@ var reactChat = React.createClass( {
           </View>
       );
   },
-  sendChat: function(message) {
-    console.log(message);
-    var data = { user: this.state.username, message: this.state.message };
-    socket.emit('post', {url: '/chat/addConversation', data: data }, function (response) { console.log(response); });
-  },
-  componentWillUnmount: function() {
-    socket.close();
-  },
   render: function() {
-    return (
-      <View style={styles.container}>
+    return (<View style={styles.container}>
+
         <ScrollView style={styles.chatContainer}>
-          { this.state.messageList.map(this.renderMessage) }
+          { this.props.messages.map(this.renderMessage) }
         </ScrollView>
-        <View>
-          <TextInput style={styles.inputMessage} placeholder={'TypeYourNameHere'} 
-            onChangeText={(text) => this.setState({username: text})}
-            value={this.state.username} />
-        </View>
-        <View>
-          <TextInput style={styles.inputMessage} 
-            ref='MessageInput'
-            placeholder={'TypeYourMessageHere'}
-            returnKeyType={'send'}
-            onChangeText={(text) => this.setState({message:text})}
-            value={this.state.message}
-            onSubmitEditing={(event) => this.sendChat()} />
-        </View>
-      </View>
-    );
+      </View>)
   }
 });
 
