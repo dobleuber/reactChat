@@ -46,7 +46,7 @@ var reactChat = React.createClass( {
     return {
       username: '',
       message: '',
-      mesageList: []
+      messageList: []
     };
   },
   componentDidMount: function() {
@@ -56,14 +56,28 @@ var reactChat = React.createClass( {
       socket.emit('get', {url: '/chat/addConversation'}, function (response) { console.log(response); });
     });
 
+    var me = this;
+
     socket.on('chat',function(obj){
         if(obj.verb === 'created') {
             console.log("Chat Message Received!");
             console.log(obj);
-            // TODO Load Message
+            var messageList = me.state.messageList.concat([obj.data]);
+            me.setState({
+              messageList: messageList
+            });
         }
     });
 
+  },
+
+  renderMessage: function (mes, i) {
+    return (
+        <View style={styles.messages} key={i}>
+            <Text>{mes.user}</Text>
+            <Text>{mes.message}</Text>
+          </View>
+      );
   },
   sendChat: function(message) {
     console.log(message);
@@ -75,88 +89,7 @@ var reactChat = React.createClass( {
     return (
       <View style={styles.container}>
         <ScrollView style={styles.chatContainer}>
-          <View style={styles.messages}>
-            <Text>message</Text>
-            <Image
-              style={styles.iconMsg}
-              source={{uri: 'http://facebook.github.io/react/img/logo_og.png'}}
-            />
-          </View>
-          <View style={styles.messages}>
-            <Text>message</Text>
-            <Image
-              style={styles.iconMsg}
-              source={{uri: 'http://facebook.github.io/react/img/logo_og.png'}}
-            />
-          </View>  
-          <View style={styles.messages}>
-            <Text>message</Text>
-            <Image
-              style={styles.iconMsg}
-              source={{uri: 'http://facebook.github.io/react/img/logo_og.png'}}
-            />
-          </View>
-          <View style={styles.messages}>
-            <Text>message</Text>
-            <Image
-              style={styles.iconMsg}
-              source={{uri: 'http://facebook.github.io/react/img/logo_og.png'}}
-            />
-          </View>
-          <View style={styles.messages}>
-            <Text>message</Text>
-            <Image
-              style={styles.iconMsg}
-              source={{uri: 'http://facebook.github.io/react/img/logo_og.png'}}
-            />
-          </View>  
-          <View style={styles.messages}>
-            <Text>message</Text>
-            <Image
-              style={styles.iconMsg}
-              source={{uri: 'http://facebook.github.io/react/img/logo_og.png'}}
-            />
-          </View><View style={styles.messages}>
-            <Text>message</Text>
-            <Image
-              style={styles.iconMsg}
-              source={{uri: 'http://facebook.github.io/react/img/logo_og.png'}}
-            />
-          </View>
-          <View style={styles.messages}>
-            <Text>message</Text>
-            <Image
-              style={styles.iconMsg}
-              source={{uri: 'http://facebook.github.io/react/img/logo_og.png'}}
-            />
-          </View>  
-          <View style={styles.messages}>
-            <Text>message</Text>
-            <Image
-              style={styles.iconMsg}
-              source={{uri: 'http://facebook.github.io/react/img/logo_og.png'}}
-            />
-          </View><View style={styles.messages}>
-            <Text>message</Text>
-            <Image
-              style={styles.iconMsg}
-              source={{uri: 'http://facebook.github.io/react/img/logo_og.png'}}
-            />
-          </View>
-          <View style={styles.messages}>
-            <Text>message</Text>
-            <Image
-              style={styles.iconMsg}
-              source={{uri: 'http://facebook.github.io/react/img/logo_og.png'}}
-            />
-          </View>  
-          <View style={styles.messages}>
-            <Text>message</Text>
-            <Image
-              style={styles.iconMsg}
-              source={{uri: 'http://facebook.github.io/react/img/logo_og.png'}}
-            />
-          </View>
+          { this.state.messageList.map(this.renderMessage) }
         </ScrollView>
         <View>
           <TextInput style={styles.inputMessage} placeholder={'TypeYourNameHere'} />
@@ -172,6 +105,8 @@ var reactChat = React.createClass( {
     );
   }
 });
+
+
 
 const styles = StyleSheet.create({
   container: {
